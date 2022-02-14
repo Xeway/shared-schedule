@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include("head-meta.ejs"); %>
+    <title>Calendrier - Formulaire</title>
+</head>
+<body>
+    <%- include("header.ejs"); %>
+    <%
+    if(!isAdmin) {
+
+        if(locals.oneIsAlreadyTaken) { %>
+            
+            <div id="alreadytaken" class="text-center mt-32 text-4xl">
+                <p class="text-red-500 my-10">La place est déjà prise pour : <span id="placeAlreadyTaken" class="font-bold"><%= placeAlreadyTaken %></span> le <span class="font-bold"><%= day %> <%= monthAndYear %></span> de <span id="hours-taken" class="font-bold"><% if(placeAlreadyTaken === placeName.first) { %>7:30 à 12:00<% } else { %>9:00 à 12:00<% } %></span></p>
+                <p class="my-10">Personnes : <span id="firstPublisher" class="font-bold"><%= firstPublisher %></span> et <span id="secondPublisher" class="font-bold"><%= secondPublisher %></span></p>
+                <p class="my-10">Demande <span id="confirmed" class="font-bold"><% if(locals.firstConfirmed) { %>validée<% } else { %>en attente<% } %></span></p>
+                <% if(locals.name === locals.firstPublisher) { %>
+                <form action="/cancel" method="post">
+                    <input type="submit" name="cancel" value="Supprimer" class="mb-10 bg-red-800 text-white w-56 h-16 rounded cursor-pointer">
+                    <input type="hidden" name="day" value="<%= day %>">
+                    <input type="hidden" name="month" value="<%= month %>">
+                    <input type="hidden" name="year" value="<%= year %>">
+                    <input type="hidden" name="place" value="<%= locals.placeAlreadyTaken %>">
+                    <input type="hidden" name="firstPublisher" value="<%= firstPublisher %>">
+                    <input type="hidden" name="secondPublisher" value="<%= secondPublisher %>">
+                </form>
+                <% } %>
+            </div>
+
+            <hr class="border-2 border-dashed">
+
+        <% }
+        
+        if(!locals.isAlreadyTaken && !locals.twoIsAlreadyTaken) {
+            if(dayName !== "Wed" && dayName !== "Sun") { %>
+            <form action="/formulaire" method="post" class="text-center <% if (!locals.oneIsAlreadyTaken) { %> mt-32 <% } %> text-4xl" id="form">
+                <div class="name my-10 flex flex-col m-auto justify-between h-64">
+                    <label for="yourName">Ton nom :</label>
+                    <input type="text" value="<%= name %>" name="yourName" id="yourName" class="rounded shadow-lg bg-gray-200 w-96 m-auto my-2 break-words sm+:w-4/5" readonly>
+                    <label for="hisName" class="mt-5">Choisis dans la liste la personne qui t'accompagne :</label>
+                    <select name="hisName" id="hisName" class="rounded shadow-lg bg-gray-200 w-96 m-auto my-2 break-words sm+:w-4/5">
+                        <% for(let people of peoples) {
+                            if(people.name !== name) { %>
+                        <option value="<%= people.name %>"><%= people.name %></option>
+                        <% } } %>
+                    </select>
+                </div>
+                <% if(isMultiplePlace) { %>
+                <div class="name m-auto sm+:flex sm+:flex-col justify-center items-center">
+                    <label for="places" class="mt-5">Lieu : </label>
+                    <select name="places" id="places" class="rounded shadow-lg bg-gray-200 sm+:w-4/5 my-2 m-auto break-words">
+                        <% if(dayName === "Mon" || dayName === "Sat") { %>
+                            <% if(locals.placeAlreadyTaken == placeName.second) { %>
+                                <option value="<%= placeName.first %>"><%= placeName.first %></option>
+                            <% } else if(locals.placeAlreadyTaken == placeName.first) { %>
+                                <option value="<%= placeName.second %>"><%= placeName.second %></option>
+                            <% } else { %>
+                                <option value="<%= placeName.first %>"><%= placeName.first %></option>
+                                <option value="<%= placeName.second %>"><%= placeName.second %></option>
+                            <% } %>
+                        <% } %>
+                    </select>
+                </div>
+                <% } %>
+                <input type="hidden" name="day" value="<%= day %>">
+                <input type="hidden" name="month" value="<%= month %>">
+                <input type="hidden" name="year" value="<%= year %>">
+                <input type="hidden" name="place" value="<% if(dayName === "Mon" && !locals.itsSpecialDay) { %><%= placeName.second %><% } else { %><%= placeName %><% } %>" id="place">
+                <p class="text-red-500 my-10">Tu vas t'inscrire pour : <span id="placename" class="font-bold"><% if(dayName === "Mon" && !locals.itsSpecialDay) { %><%= placeName.second %><% } else { %><%= placeName %><% } %></span> le <span class="font-bold"><%= day %> <%= monthAndYear %></span> de <span id="hours" class="font-bold">9:00 à 12:00</span></p>
+                <input type="submit" name="confirm" value="Confirmer" class="my-10 bg-gray-800 text-white w-56 h-16 rounded confirm cursor-pointer">
+                <br>
+                <a href="/?month=<%= month %>&year=<%= year %>"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a>
+            </form>
+            <script>
+
+                if("<%= dayName %>" === "Sat" || ("<%= dayName %>" === "Mon" && <% if(locals.itsSpecialDay === undefined) { %>false<% } else { %><%= locals.itsSpecialDay %><% } %> === true)) {
+
+                    let placeName = document.querySelector("#places");
+                    document.querySelector("#placename").innerHTML = placeName.value;
+
+                    document.querySelector("#place").value = placeName.value;
+
+
+                    placeName.addEventListener("change", (e) => {
+                        document.querySelector("#placename").innerHTML = placeName.value;
+
+                        document.querySelector("#place").value = placeName.value;
+                    });
+
+                }
+
+                if("<%= dayName %>" === "Mon" && <% if(locals.itsSpecialDay === undefined) { %>false<% } else { %><%= locals.itsSpecialDay %><% } %> === true) {
+
+                    let placeName = document.querySelector("#places");
+
+                    if(placeName.value === "<%= placeName.second %>") {
+                        document.querySelector('#hours').innerHTML = "9:00 à 12:00";
+                    } else if(placeName.value === "<%= placeName.first %>") {
+                        document.querySelector('#hours').innerHTML = "7:30 à 12:00";
+                    }
+
+                    placeName.addEventListener("change", (e) => {
+                        if(placeName.value === "<%= placeName.second %>") {
+                            document.querySelector('#hours').innerHTML = "9:00 à 12:00";
+                        } else if(placeName.value === "<%= placeName.first %>") {
+                            document.querySelector('#hours').innerHTML = "7:30 à 12:00";
+                        }
+                    });
+
+                }
+            </script>
+            <% } else { %>
+            <div id="invalid" class="text-center mt-32 text-4xl">
+                <p>Le jour selectionné est invalide.</p>
+                <a href="/?month=<%= month %>&year=<%= year %>"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a>
+            </div>
+            <% }
+        } else { %>
+            <div id="alreadytaken" class="text-center mt-32 text-4xl">
+                <p class="text-red-500 my-10">La place est déjà prise pour : <span id="placeAlreadyTaken" class="font-bold"><%= placeAlreadyTaken %></span> le <span class="font-bold"><%= day %> <%= monthAndYear %></span> de <span id="hours-taken1" class="font-bold"><% if(placeAlreadyTaken === placeName.first) { %>7:30 à 12:00<% } else { %>9:00 à 12:00<% } %></span></p>
+                <p class="my-10">Personnes : <span id="firstPublisher" class="font-bold"><%= firstPublisher %></span> et <span id="secondPublisher" class="font-bold"><%= secondPublisher %></span></p>
+                <p class="my-10">Demande <span id="confirmed" class="font-bold"><% if(locals.firstConfirmed) { %>validée<% } else { %>en attente<% } %></span></p>
+                <% if(locals.name === locals.firstPublisher) { %>
+                <form action="/cancel" method="post">
+                    <input type="submit" name="cancel" value="Supprimer" class="mb-10 bg-red-800 text-white w-56 h-16 rounded cursor-pointer">
+                    <input type="hidden" name="day" value="<%= day %>">
+                    <input type="hidden" name="month" value="<%= month %>">
+                    <input type="hidden" name="year" value="<%= year %>">
+                    <input type="hidden" name="place" value="<%= locals.placeAlreadyTaken %>">
+                    <input type="hidden" name="firstPublisher" value="<%= firstPublisher %>">
+                    <input type="hidden" name="secondPublisher" value="<%= secondPublisher %>">
+                </form>
+                <% } %>
+                <% if(!locals.twoIsAlreadyTaken) { %><a href="/?month=<%= month %>&year=<%= year %>"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a><% } %>
+            </div>
+            <% if(locals.twoIsAlreadyTaken) { %>
+            <div id="alreadytaken" class="text-center mt-32 text-4xl">
+                <p class="text-red-500 my-10">La place est déjà prise pour : <span id="twoPlaceAlreadyTaken" class="font-bold"><%= secondPlaceAlreadyTaken %></span> le <span class="font-bold"><%= day %> <%= monthAndYear %></span> de <span id="hours-taken2" class="font-bold"><% if(secondPlaceAlreadyTaken === placeName.first) { %>7:30 à 12:00<% } else { %>9:00 à 12:00<% } %></span></p>
+                <p class="my-10">Personnes : <span id="thirdPublisher" class="font-bold"><%= thirdPublisher %></span> et <span id="fourthPublisher" class="font-bold"><%= fourthPublisher %></span></p>
+                <p class="my-10">Demande <span id="secondConfirmed" class="font-bold"><% if(locals.secondConfirmed) { %>validée<% } else { %>en attente<% } %></span></p>
+                <% if(locals.name === locals.thirdPublisher) { %>
+                <form action="/cancel" method="post">
+                    <input type="submit" name="cancel" value="Supprimer" class="mb-10 bg-red-800 text-white w-56 h-16 rounded cursor-pointer">
+                    <input type="hidden" name="day" value="<%= day %>">
+                    <input type="hidden" name="month" value="<%= month %>">
+                    <input type="hidden" name="year" value="<%= year %>">
+                    <input type="hidden" name="place" value="<%= locals.secondPlaceAlreadyTaken %>">
+                    <input type="hidden" name="firstPublisher" value="<%= thirdPublisher %>">
+                    <input type="hidden" name="secondPublisher" value="<%= fourthPublisher %>">
+                </form>
+                <% } %>
+                <a href="/?month=<%= month %>&year=<%= year %>"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a>
+            </div>
+            <% }
+        }
+    } else {
+        if(locals.placeAlreadyTaken === undefined && locals.firstPublisher === undefined && locals.secondPublisher === undefined) { %>
+            <div id="notYetTaken" class="text-center mt-32 text-4xl">
+                <p>Pas encore de demande pour ce jour.</p>
+                <a href="/?month=<%= month %>&year=<%= year %>"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a>
+            </div>
+        <% } else { %>
+            <form action="/admin" method="post" class="text-center mt-32 text-4xl">
+                <div id="alreadytaken" class="text-center mt-32 text-4xl">
+                    <p class="my-10">Lieu : <span id="placeAlreadyTaken" class="font-bold"><%= locals.placeAlreadyTaken %></span></p>
+                    <p class="my-10">Date : <span class="font-bold"><%= day %> <%= monthAndYear %></span> de <span id="firstHours" class="font-bold"><% if(locals.placeAlreadyTaken === placeName.first) { %>7:30<% } else { %>9:00<% } %> à 12:00</span></p>
+                    <p class="my-10">Personnes : <span id="firstPublisher" class="font-bold"><%= firstPublisher %></span> et <span id="secondPublisher" class="font-bold"><%= secondPublisher %></span></p>
+                    <label for="comment1" class="align-top mb-2 inline-block">Commentaire : </label>
+                    <textarea id="comment1" name="comment" class="bg-gray-200 text-2xl sm+:w-10/12 drop-shadow-md rounded" rows="3" cols="30"></textarea>
+                    <br>
+                    <% if(!locals.firstConfirmed) { %><input type="submit" name="action" value="Accepter" class="my-10 bg-green-800 text-white w-56 h-16 rounded cursor-pointer"><% } %>
+                    <input type="submit" name="action" value="Rejeter" class="my-10 bg-red-800 text-white w-56 h-16 rounded cursor-pointer">
+                    <br>
+                    <% if(!locals.twoIsAlreadyTaken) { %><a href="/?month=<%= month %>&year=<%= year %>"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a><% } %>
+                </div>
+                <input type="hidden" name="day" value="<%= day %>">
+                <input type="hidden" name="month" value="<%= month %>">
+                <input type="hidden" name="year" value="<%= year %>">
+                <input type="hidden" name="place" value="<%= locals.placeAlreadyTaken %>">
+                <input type="hidden" name="firstPublisher" value="<%= firstPublisher %>">
+                <input type="hidden" name="secondPublisher" value="<%= secondPublisher %>">
+            </form>
+
+            <% if(locals.twoIsAlreadyTaken) { %><hr class="border-2 border-dashed"><% }
+
+            if(locals.twoIsAlreadyTaken) { %>
+            <form action="/admin" method="post" class="text-center mt-32 text-4xl">
+                <div id="alreadytaken" class="text-center mt-32 text-4xl">
+                    <p class="my-10">Lieu : <span id="twoPlaceAlreadyTaken" class="font-bold"><%= secondPlaceAlreadyTaken %></span></p>
+                    <p class="my-10">Date : <span class="font-bold"><%= day %> <%= monthAndYear %></span> de <span id="secondHours" class="font-bold"><% if(locals.secondPlaceAlreadyTaken === placeName.first) { %>7:30<% } else { %>9:00<% } %> à 12:00</span></p>
+                    <p class="my-10">Personnes : <span id="thirdPublisher" class="font-bold"><%= thirdPublisher %></span> et <span id="fourthPublisher" class="font-bold"><%= fourthPublisher %></span></p>
+                    <label for="comment2" class="align-top mb-2 inline-block">Commentaire : </label>
+                    <textarea id="comment2" name="comment" class="bg-gray-200 text-2xl sm+:w-10/12 drop-shadow-md rounded" rows="3" cols="30"></textarea>
+                    <br>
+                    <% if(!locals.secondConfirmed) { %><input type="submit" name="action" value="Accepter" class="my-10 bg-green-800 text-white w-56 h-16 rounded cursor-pointer"><% } %>
+                    <input type="submit" name="action" value="Rejeter" class="my-10 bg-red-800 text-white w-56 h-16 rounded cursor-pointer">
+                    <br>
+                    <a href="/?month=<%= month %>&year=<%= year %>"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a>
+                </div>
+                <input type="hidden" name="day" value="<%= day %>">
+                <input type="hidden" name="month" value="<%= month %>">
+                <input type="hidden" name="year" value="<%= year %>">
+                <input type="hidden" name="place" value="<%= locals.secondPlaceAlreadyTaken %>">
+                <input type="hidden" name="firstPublisher" value="<%= thirdPublisher %>">
+                <input type="hidden" name="secondPublisher" value="<%= fourthPublisher %>">
+            </form>
+            <% }
+        }
+    } %>
+</body>
+</html>

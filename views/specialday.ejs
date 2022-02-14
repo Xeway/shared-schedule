@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include("head-meta.ejs"); %>
+    <title>Définition des jours spéciaux</title>
+</head>
+<body>
+    <%- include("header.ejs"); %>
+    <div class="forms text-4xl text-center m-auto">
+        <form action="/specialday" method="post" class="mt-32">
+            <input type="date" name="date" id="date" required class="rounded shadow-lg bg-gray-200 my-10 mx-5 w-72 h-20 border-solid border text-center">
+            <input type="submit" name="add" value="Ajouter" id="submitInput" class="my-10 mx-5 bg-gray-800 text-white w-56 h-16 rounded cursor-pointer">
+            <p style="display: none;" id="errorMessage" class="italic text-2xl text-red-800">Tu as sélectionné un jour différent que lundi.</p>
+        </form>
+        <% if(dates.length > 0) { %>
+        <form action="/specialday" method="post" class="mt-32">
+            <div class="text-center mt-32 sm+:mt-20 flex flex-col justify-between items-center">
+                <p>Liste des jours spéciaux :</p>
+                <ul class="list-disc mt-8 flex flex-col items-end justify-center">
+                    <% for(let date of dates) { %>
+                    <li class="my-3 align-middle"><%= date.getDate() %>/<%= date.getMonth() + 1 %>/<%= date.getFullYear() %><button type="submit" name="delete" value="<%= date.getFullYear() %>-<%= date.getMonth() + 1 %>-<%= date.getDate() %>" style="background-image: url('img/cross-mark.png');" class="ml-3 inline-block w-10 h-10 bg-contain aspect-square bg-no-repeat align-middle"></button></li>
+                    <% } %>
+                </ul>
+            </div>
+        </form>
+        <% } %>
+        <br>
+        <a href="/"><button type="button" class="my-10 bg-gray-800 text-white w-56 h-32 rounded text-center">Revenir au calendrier</button></a>
+    </div>
+    <script>
+        let dateInput = document.querySelector("#date");
+        let errorMessage = document.querySelector("#errorMessage");
+        let submitInput = document.querySelector("#submitInput");
+
+        function displayErrorMessage(dateValue) {
+            let date = new Date(dateValue).toString().slice(0, 3);
+            if(date !== "Mon" && dateValue !== "") {
+                errorMessage.style.display = "block";
+                submitInput.setAttribute("disabled", "");
+                submitInput.classList.remove("bg-gray-800");
+                submitInput.classList.add("bg-gray-400");
+            } else {
+                errorMessage.style.display = "none";
+                submitInput.removeAttribute("disabled");
+                submitInput.classList.add("bg-gray-800");
+                submitInput.classList.remove("bg-gray-400");
+            }
+        }
+        displayErrorMessage(dateInput.value);
+
+        dateInput.addEventListener("change", (e) => {
+            displayErrorMessage(e.target.value);
+        });
+    </script>
+</body>
+</html>

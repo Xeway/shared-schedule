@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.fixed-day-indicator {
+    @apply fixed top-2 inset-x-0;
+}
+
+.blind {
+    @apply invisible;
+}

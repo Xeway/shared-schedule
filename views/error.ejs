@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include("head-meta.ejs"); %>
+    <title>Calendrier - Erreur</title>
+</head>
+<body>
+    <%- include("header.ejs"); %>
+    <%
+    let text;
+    switch(true) {
+        case message == "" || message === undefined:
+            text = "Il y a eu un problème quelque part.";
+            break;
+        case message === "errordb":
+            text = "Il y a eu un problème avec la base de donnée.";
+            break;
+        case message === "erroremail":
+            text = "Il y a eu un problème avec l'envoi de l'email.";
+            break;
+        case message === "datasentincorrect":
+            text = "Il y a eu un problème avec les données que vous avez envoyées.";
+            break;
+        case message === "notfree":
+            text = "L'évènement choisit à déjà été prit.";
+            break;
+        case message === "wrongday":
+            text = "Le jour choisit est invalide.";
+            break;
+        case message === "nothingdeleted":
+            text = "Aucune valeur n'a été supprimée.";
+            break;
+        case message === "nothingupdated":
+            text = "Aucune valeur n'a été changée.";
+            break;
+        case message === "valuealreadyexist":
+            text = "Cette valeur existe déjà.";
+            break;
+        case message === "unknowninstruction":
+            text = "Instruction non reconnue.";
+            break;
+        case message === "invaliddate":
+            text = "Date envoyée non valide.";
+            break;
+        case message === "404":
+            text = "404 - La page demandée n'existe pas.";
+            break;
+        case message === "500":
+            text = "500 - Il y a un problème du côté du serveur.";
+            break;
+        default:
+            text = "Il y a eu un problème quelque part !";
+            break;
+    }
+    %>
+    <div id="404" class="text-center mt-32 text-4xl">
+        <p><%= text %></p>
+        <a href="/?month=<%= month %>&year=<%= year %>"><button class="my-10 bg-gray-800 text-white w-56 h-32 rounded">Revenir au calendrier</button></a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include("head-meta.ejs"); %>
+    <title>Calendrier - Connexion</title>
+</head>
+<body>
+    <%- include("header.ejs"); %>
+    <form action="/login" method="post" class="text-center mt-32 text-4xl flex flex-col justify-between items-center" id="form">
+        <div class="people flex my-10 flex-col w-96 sm+:w-4/5 justify-between h-32">
+            <label for="people" class="whitespace-nowrap">Choisis ton nom :</label>
+            <select name="people" id="people" class="rounded shadow-lg bg-gray-200">
+                <% for(let people of peoples) { %>
+                <option value="<%= people.name %>"><%= people.name %></option>
+                <% } %>
+            </select>
+        </div>
+        <input type="password" name="password" id="password" placeholder="Mot de passe" class="rounded shadow-lg border-gray-200 border-solid border sm+:w-4/5 m-auto">
+        <input type="submit" name="connect" value="Se connecter" class="my-10 bg-gray-800 text-white w-56 h-16 rounded connect cursor-pointer">
+        <% if(locals.error) { %>
+            <p class="error italic text-2xl"><%= locals.error %></p>
+        <% } %>
+    </form>
+</body>
+</html>
